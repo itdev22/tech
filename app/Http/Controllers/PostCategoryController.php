@@ -8,6 +8,7 @@ use App\Http\Requests\UpdatePostCategoryRequest;
 use App\Models\PostCategory;
 use GuzzleHttp\Psr7\Response;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class PostCategoryController extends Controller
 {
@@ -17,7 +18,7 @@ class PostCategoryController extends Controller
     public function index()
     {
         try {
-            $postCategories = PostCategory::all();
+            $postCategories = PostCategory::paginate();
             return response()->json(ResponseFormat::Success($postCategories, 'Get Post Category', 200), 200);
         } catch (\Throwable $th) {
             return response()->json([
@@ -46,8 +47,8 @@ class PostCategoryController extends Controller
         try {
             $validated = $request->validate($rules);
             $postCategory = PostCategory::create($validated);
-            return response()->json(ResponseFormat::Success($postCategory, 'Post Category Created', 201), 201);
 
+            return response()->json(ResponseFormat::Success($postCategory, 'Post Category Created', 200), 200);
         } catch (\Throwable $th) {
             return response()->json([
                 'message' => 'Error',
@@ -99,6 +100,7 @@ class PostCategoryController extends Controller
             if (!$postCategory) {
                 return response()->json(ResponseFormat::BadRequest('Post Category not found', 404), 404);
             }
+            $validated['updated_by'] = Auth::user()->id;
             $postCategory->update($validated);
 
             return response()->json(ResponseFormat::Success($postCategory, 'Post Category Updated', 200), 200);

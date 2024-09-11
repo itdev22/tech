@@ -13,15 +13,14 @@ return new class extends Migration
     {
         Schema::create('posts', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('category_id')->nullable();
-            $table->foreignId('parent_id');
+            $table->foreignId('category_id')->nullable()->references('id')->on('post_categories');
+            $table->foreignId('parent_id')->nullable()->references('id')->on('posts');
             $table->string('title');
-            $table->string('slug')->unique();
+            $table->string('slug')->nullable()->unique();
             $table->text('content');
             $table->string('status')->default('draft');
             $table->string('type')->default('post');
             $table->string('visibility')->default('public');
-            $table->string('media_id')->nullable();
             $table->string('created_by')->nullable();
             $table->string('updated_by')->nullable();
             $table->timestamps();

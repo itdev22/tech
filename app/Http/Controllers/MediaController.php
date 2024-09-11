@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Helper\ResponseFormat;
 use App\Http\Requests\StoreMediaRequest;
 use App\Http\Requests\UpdateMediaRequest;
 use App\Models\Media;
+use Illuminate\Http\Request;
 
 class MediaController extends Controller
 {
@@ -13,7 +15,15 @@ class MediaController extends Controller
      */
     public function index()
     {
-        //
+        try {
+            $media = Media::paginate();
+            return response()->json(ResponseFormat::Success($media,'Success Get data',200), 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'message' => 'Error',
+                'error' => $th->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -27,7 +37,7 @@ class MediaController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreMediaRequest $request)
+    public function store(Request $request)
     {
         //
     }
@@ -51,7 +61,7 @@ class MediaController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateMediaRequest $request, Media $media)
+    public function update(Request $request, Media $media)
     {
         //
     }

@@ -2,7 +2,9 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BookmarkController;
+use App\Http\Controllers\MediaController;
 use App\Http\Controllers\PostCategoryController;
+use App\Http\Controllers\PostController;
 use App\Http\Controllers\UserController;
 use App\Models\PostCategory;
 use Illuminate\Http\Request;
@@ -25,7 +27,10 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('login', [AuthController::class, 'login']);
 Route::post('login', [AuthController::class, 'login']);
+Route::get('verification-email/{email}', [AuthController::class, 'verification']);
 Route::post('register', [AuthController::class, 'register']);
+Route::post('forgot-password', [AuthController::class, 'forgotPassword']);
+Route::post('reset-password', [AuthController::class, 'resetPassword']);
 
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('logout', [AuthController::class, 'logout']);
@@ -44,10 +49,22 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::delete('/{id}', [PostCategoryController::class, 'destroy']);
     });
     Route::prefix('bookmark')->group(function () {
-        Route::get('/', [BookmarkController::class, 'index']);
-        Route::get('/{id}', [BookmarkController::class, 'show']);
-        Route::post('/', [BookmarkController::class, 'store']);
-        Route::put('/{id}', [BookmarkController::class, 'update']);
-        Route::delete('/{id}', [BookmarkController::class, 'destroy']);
+        Route::get('', [BookmarkController::class, 'index']);
+        Route::post('add', [BookmarkController::class, 'store']);
+        Route::post('delete', [BookmarkController::class, 'destroy']);
+    });
+    Route::prefix('post')->group(function () {
+        Route::get('/', [PostController::class, 'index']);
+        Route::get('/{id}', [PostController::class, 'show']);
+        Route::post('/', [PostController::class, 'store']);
+        Route::put('/{id}', [PostController::class, 'update']);
+        Route::delete('/{id}', [PostController::class, 'destroy']);
+    });
+    Route::prefix('media')->group(function () {
+        Route::get('/', [MediaController::class, 'index']);
+        Route::get('/{id}', [PostController::class, 'show']);
+        Route::post('/', [PostController::class, 'store']);
+        Route::put('/{id}', [PostController::class, 'update']);
+        Route::delete('/{id}', [PostController::class, 'destroy']);
     });
 });

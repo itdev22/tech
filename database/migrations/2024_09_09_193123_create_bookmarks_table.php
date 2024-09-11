@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('bookmarks', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('post_id');
-            $table->foreignId('user_id');
+            $table->foreignId('post_id')->references('id')->on('posts');
+            $table->foreignId('user_id')->references('id')->on('users');
             $table->timestamps();
         });
     }

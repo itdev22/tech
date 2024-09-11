@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Helper\ResponseFormat;
 use App\Models\User;
+use App\Utils\MailSender;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
@@ -14,8 +16,9 @@ class UserController extends Controller
     public function index()
     {
         try {
-            $users = User::all();
-            return response()->json(ResponseFormat::Success($users,'Get User',200), 200);
+            $users = User::with('media')->paginate();
+
+            return response()->json(ResponseFormat::Success($users, 'Get User', 200), 200);
         } catch (\Throwable $th) {
             return response()->json([
                 'message' => 'Error',
@@ -37,7 +40,11 @@ class UserController extends Controller
         try {
             $validated = $request->validate($rules);
             $user = User::create($validated);
-            return response()->json(ResponseFormat::Success($user,'User Created',201), 201);
+            if ($request->file('image')) {
+                $user->addMedia($request->file('image'))->toMediaCollection('users');
+            }
+
+            return response()->json(ResponseFormat::Success($user, 'User Created', 200), 200);
         } catch (\Throwable $th) {
             return response()->json([
                 'message' => 'Error',
@@ -54,10 +61,10 @@ class UserController extends Controller
         try {
             $user = User::find($id);
             if (!$user) {
-                return response()->json(ResponseFormat::BadRequest('User not found',404), 404);
+                return response()->json(ResponseFormat::BadRequest('User not found', 404), 404);
             }
-            return response()->json(ResponseFormat::Success($user,'User Detail',200), 200);
 
+            return response()->json(ResponseFormat::Success($user, 'User Detail', 200), 200);
         } catch (\Throwable $th) {
             return response()->json([
                 'message' => 'Error',
@@ -81,11 +88,15 @@ class UserController extends Controller
 
             $user = User::find($id);
             if (!$user) {
-                return response()->json(ResponseFormat::BadRequest('User not found',404), 404);
+                return response()->json(ResponseFormat::BadRequest('User not found', 404), 404);
             }
-
+            if ($request->file('image')) {
+                $user->media()->delete();
+                $user->addMedia($request->file('image'))->toMediaCollection('users');
+            }
             $user->update($validated);
-            return response()->json(ResponseFormat::Success($user,'User Updated',200), 200);
+
+            return response()->json(ResponseFormat::Success($user, 'User Updated', 200), 200);
         } catch (\Throwable $th) {
             return response()->json([
                 'message' => 'Error',
@@ -102,11 +113,12 @@ class UserController extends Controller
         try {
             $user = User::find($id);
             if (!$user) {
-                return response()->json(ResponseFormat::BadRequest('User not found',404), 404);
+                return response()->json(ResponseFormat::BadRequest('User not found', 404), 404);
             }
-
+            $user->media()->delete();
             $user->delete();
-            return response()->json(ResponseFormat::Success('','User Deleted',200), 200);
+
+            return response()->json(ResponseFormat::Success('', 'User Deleted', 200), 200);
         } catch (\Throwable $th) {
             return response()->json([
                 'message' => 'Error',

@@ -10,9 +10,6 @@ use Illuminate\Http\Request;
 
 class BookmarkController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
         try {
@@ -26,17 +23,6 @@ class BookmarkController extends Controller
         }
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         $rules = [
@@ -44,16 +30,15 @@ class BookmarkController extends Controller
         ];
         try {
             $validated = $request->validate($rules);
+            $bookmarkCheck = Bookmark::where('post_id', $validated['post_id'])->where('user_id', auth()->user()->id)->first();
+            if ($bookmarkCheck) {
+                return response()->json(ResponseFormat::BadRequest('Bookmark already exist', 400), 400);
+            }
             $bookmark = Bookmark::create([
                 'post_id' => $validated['post_id'],
                 'user_id' => auth()->user()->id
             ]);
-            return response()->json(ResponseFormat::Success($bookmark, 'Bookmark Created', 201), 201);
-        } catch (\Throwable $th) {
-            return response()->json([
-                'message' => 'Error',
-                'error' => $th->getMessage()
-            ], 500);
+            return response()->json(ResponseFormat::Success($bookmark, 'Bookmark Created', 200), 200);
         } catch (\Throwable $th) {
             return response()->json([
                 'message' => 'Error',
@@ -62,9 +47,6 @@ class BookmarkController extends Controller
         }
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(string $id)
     {
         try {
@@ -81,27 +63,24 @@ class BookmarkController extends Controller
         }
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Bookmark $bookmark)
+    public function destroy(Request $request)
     {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateBookmarkRequest $request, Bookmark $bookmark)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Bookmark $bookmark)
-    {
-        //
+        $rules = [
+            'post_id' => 'required|integer',
+        ];
+        try {
+            $validated = $request->validate($rules);
+            $bookmarkCheck = Bookmark::where('post_id', $validated['post_id'])->where('user_id', auth()->user()->id)->first();
+            if (!$bookmarkCheck) {
+                return response()->json(ResponseFormat::BadRequest('Bookmark Notfound', 400), 400);
+            }
+            $bookmarkCheck->delete();
+            return response()->json(ResponseFormat::Success(null, 'Bookmark Deleted', 200), 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'message' => 'Error',
+                'error' => $th->getMessage()
+            ], 500);
+        }
     }
 }
